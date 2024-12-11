@@ -300,9 +300,10 @@ defmodule Mail.Parsers.RFC2822 do
     [name, body] = String.split(header, ":", parts: 2)
     key = String.downcase(name)
     decoded = parse_encoded_word(body)
+    value = parse_header_value(key, decoded)
 
     headers =
-      put_header(message.headers, key, String.downcase(name) |> parse_header_value(decoded))
+      put_header(message.headers, key, value)
 
     message = %{message | headers: headers}
     parse_headers(message, tail)
@@ -401,7 +402,7 @@ defmodule Mail.Parsers.RFC2822 do
   defp parse_structured_header_value("", nil, [], acc),
     do: acc
 
-  defp parse_structured_header_value("", value, sub_types, ""),
+  defp parse_structured_header_value("", value, [_ | _] = sub_types, _acc),
     do: [value | Enum.reverse(sub_types)]
 
   defp parse_structured_header_value("", value, [], acc),
